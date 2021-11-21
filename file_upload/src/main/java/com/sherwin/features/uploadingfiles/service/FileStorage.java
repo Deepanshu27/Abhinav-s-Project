@@ -1,5 +1,6 @@
 package com.sherwin.features.uploadingfiles.service;
 
+import com.jcraft.jsch.*;
 import com.sherwin.features.uploadingfiles.dto.FileInfo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -26,21 +27,80 @@ public class FileStorage implements StorageService {
     @Value("${file.location}")
     private String fileLocation;
 
+    @Value("${remote.host.name}")
+    private String host;
+    @Value("${remote.user.name}")
+    String user;
+    @Value("${remote.user.password}")
+    String password;
+    @Value("${remote.file.location}")
+    String remoteDir;
+
     /**
      * Save the file in the file location.
      *
      * @param file multipart file.
      */
     @Override
-    public void store(MultipartFile file) throws IOException {
+    public void store(@NonNull final MultipartFile file) throws IOException, JSchException, SftpException {
+        /* store to local path of the app server. */
+        final String fileName = storeToLocalPath(file);
+        /* get the remote server connection. */
+        final ChannelSftp sftpSession = getSession();
+        /* upload the file to remote host and close the connection. */
+        uploadFileToRemoteHost(sftpSession, fileName);
+    }
+
+    /**
+     * Store the file to the local server path.
+     *
+     * @param file file to be saved.
+     * @return file name which was saved.
+     * @throws IOException if exception occurred while saving the file.
+     */
+    private String storeToLocalPath(@NonNull final MultipartFile file) throws IOException {
         final String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss-"));
         final String fileName = date + file.getOriginalFilename();
         final String filePath = fileLocation + File.separator + fileName;
         final File fileDirectory = new File(fileLocation);
-        if( !fileDirectory.exists()) {
+        if (!fileDirectory.exists()) {
             fileDirectory.mkdir();
         }
         Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+        return fileName;
+    }
+
+    /**
+     * Get the SFTP session to the remote host.
+     *
+     * @return SFTP channel to the remote host.
+     * @throws JSchException if error occurred while connecting to remote host.
+     */
+    private ChannelSftp getSession() throws JSchException {
+        java.util.Properties config = new java.util.Properties();
+        config.put("StrictHostKeyChecking", "no");
+        JSch jsch = new JSch();
+        Session session = jsch.getSession(user, host, 22);
+        session.setPassword(password);
+        session.setConfig(config);
+        session.connect();
+        return (ChannelSftp) session.openChannel("sftp");
+    }
+
+    /**
+     * Upload the file to the remote host.
+     *
+     * @param channelSftp SFTP channel connection.
+     * @param fileName    name of the file to be uploaded.
+     * @throws SftpException if error occurred while transferring the file to the remote server.
+     */
+    private void uploadFileToRemoteHost(
+            @NonNull final ChannelSftp channelSftp,
+            @NonNull final String fileName) throws SftpException {
+        final String sourcePath = fileLocation + File.separator + fileName;
+        final String destinationPath = remoteDir + File.separator + fileName;
+        channelSftp.put(sourcePath, destinationPath);
+        channelSftp.exit();
     }
 
     /**
@@ -128,7 +188,7 @@ public class FileStorage implements StorageService {
         if (file.exists() && file.isFile()) {
             return new FileInfo(
                     file.getName(),
-                    new Date(file.lastModified() ));
+                    new Date(file.lastModified()));
         }
         return null;
     }

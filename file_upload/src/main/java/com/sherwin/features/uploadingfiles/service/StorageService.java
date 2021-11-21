@@ -1,5 +1,7 @@
 package com.sherwin.features.uploadingfiles.service;
 
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import com.sherwin.features.uploadingfiles.dto.FileInfo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,7 +14,7 @@ import java.util.List;
 
 public interface StorageService {
 
-    void store(MultipartFile file) throws IOException;
+    void store(MultipartFile file) throws IOException, JSchException, SftpException;
 
     List<FileInfo> loadAll() throws IOException;
 

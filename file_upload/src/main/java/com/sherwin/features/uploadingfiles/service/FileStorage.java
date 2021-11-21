@@ -96,9 +96,10 @@ public class FileStorage implements StorageService {
      */
     private void uploadFileToRemoteHost(
             @NonNull final ChannelSftp channelSftp,
-            @NonNull final String fileName) throws SftpException {
+            @NonNull final String fileName) throws SftpException, JSchException {
         final String sourcePath = fileLocation + File.separator + fileName;
         final String destinationPath = remoteDir + File.separator + fileName;
+        channelSftp.connect();
         channelSftp.put(sourcePath, destinationPath);
         channelSftp.exit();
     }

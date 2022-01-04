@@ -1,0 +1,21 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 128KB
+      max-request-size: 128KB
+
+  mvc:
+    format:
+      date: yyyy-MM-dd
+      date-time: yyyy-MM-dd HH:mm:ss
+      time: HH:mm:ss
+  profiles:
+    active: developmentGroup
+    group:
+      "defaultGroup": "file, db"
+      "developmentGroup": "file, db"
+
+
+logging:
+  level:
+    root: DEBUG

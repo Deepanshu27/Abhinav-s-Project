@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+  datasource:
+    username: user
+    password: password
+    driverClass: org.mariadb.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/file_upload?serverTimeZone=UTC&useUnicode=yes&characterEncoding=UTF-8

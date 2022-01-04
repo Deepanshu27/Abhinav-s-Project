@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@RequestMapping(value = "/fileUpload")
 public class FileUploadController {
 
     private final StorageService storageService;
@@ -40,7 +41,7 @@ public class FileUploadController {
      *
      * @return List of file info object containing the file details.
      */
-    @GetMapping("/")
+    @GetMapping("/files/listAll")
     public ResponseEntity<List<FileInfo>> listUploadedFiles() {
         try {
             final List<FileInfo> fileList = storageService.loadAll();
@@ -82,7 +83,7 @@ public class FileUploadController {
      *
      * @param file Multipart file object.
      */
-    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/files/uploadFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
     public ResponseEntity<String> uploadFile(@RequestParam(value = "file", required = false) MultipartFile file) {
         try {
@@ -103,7 +104,7 @@ public class FileUploadController {
      *
      * @return List of file path which are deleted.
      */
-    @DeleteMapping("/")
+    @DeleteMapping("/files/deleteAll")
     @ResponseBody
     public ResponseEntity<List<String>> deleteAllFiles() {
         try {

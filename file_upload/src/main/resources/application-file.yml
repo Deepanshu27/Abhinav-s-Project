@@ -1,0 +1,11 @@
+file:
+  location: ${user.home}/sherwin/
+
+remote:
+  host:
+    name:
+  user:
+    name:
+    password:
+  file:
+    location:

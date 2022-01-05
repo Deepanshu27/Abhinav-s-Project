@@ -36,6 +36,9 @@ dependencies {
 	implementation 'mysql:mysql-connector-java:8.0.27'
 	implementation 'org.mariadb.jdbc:mariadb-java-client:2.4.0'
 
+	/* google guava dependency */
+	implementation group: 'com.google.guava', name: 'guava-annotations', version: 'r03'
+
 	/* lombok dependency */
 	compileOnly 'org.projectlombok:lombok:1.18.22'
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'

@@ -1,6 +1,5 @@
 package com.sherwin.config.security;
 
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -14,9 +13,9 @@ public class RESTAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
-            @NonNull final HttpServletRequest request,
-            @NonNull final HttpServletResponse response,
-            @NonNull final AuthenticationException authException
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException
     )
             throws IOException {
 

@@ -15,7 +15,6 @@ spring:
       "defaultGroup": "file, db"
       "developmentGroup": "file, db"
 
-
 logging:
   level:
     root: DEBUG

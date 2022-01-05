@@ -1,27 +1,30 @@
 package com.sherwin.persistence.dao;
 
-import com.sherwin.config.security.ApplicationUser;
-import com.sherwin.features.uploadingfiles.dto.User;
+import com.google.common.annotations.VisibleForTesting;
 import com.sherwin.features.uploadingfiles.exception.UserNotFoundException;
-import com.sherwin.persistence.entities.UserRoleEntity;
-import com.sherwin.persistence.repositories.UserRoleRepository;
+import com.sherwin.persistence.entities.UserEntity;
+import com.sherwin.persistence.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Component
+@Service
 @AllArgsConstructor
-public class UserRoleDataSource implements UserDetailsService {
+public class ApplicationUserService implements UserDetailsService {
 
-    private final UserRoleRepository userRoleRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Get user and it's all associated roles.
@@ -30,20 +33,24 @@ public class UserRoleDataSource implements UserDetailsService {
      * @return User DTO containing user details.
      * @throws UserNotFoundException if user not found.
      */
-    private User getUserRoles(@NonNull final String userId) throws UserNotFoundException {
+    @NonNull
+    @VisibleForTesting
+    UserDetails getUserRoles(@NonNull final String userId) throws UserNotFoundException {
         if (isUserPresent(userId)) {
-            final Iterable<UserRoleEntity> userRoleEntities = userRoleRepository.findAllByUserId(userId);
-            final User user = new User();
+            final Iterable<UserEntity> userRoleEntities = userRepository.findUserRoleById(userId);
             final List<String> userRoles = new ArrayList<>();
-            for (UserRoleEntity userRoleEntity : userRoleEntities) {
-                user.setUserName(userRoleEntity.getUserRoleId().getUserName());
-                user.setUserId(userRoleEntity.getUserRoleId().getUserId());
-                userRoles.add(userRoleEntity.getUserRoleId().getUserRole());
+            String password = null;
+            for(UserEntity userEntity : userRoleEntities) {
+                password = userEntity.getPassword();
+                userRoles.add(userEntity.getUserRoleId().getUserRole());
             }
-            user.setUserRoles(userRoles);
-            return user;
+            return User.builder()
+                    .username(userId)
+                    .password(passwordEncoder.encode(password))
+                    .roles(userRoles.toArray(new String[0]))
+                    .build();
         } else {
-            final String message = String.format("User with '%s' id not found.", userId);
+            final String message = String.format("User with id '%s' not found.", userId);
             throw new UserNotFoundException(message);
         }
     }
@@ -54,15 +61,15 @@ public class UserRoleDataSource implements UserDetailsService {
      * @param userId user id of the user, needs to check.
      * @return true if user found else false.
      */
-    private boolean isUserPresent(@NonNull final String userId) {
-        return userRoleRepository.existsById(userId);
+    @VisibleForTesting
+    boolean isUserPresent(@NonNull final String userId) {
+        return userRepository.existsById(userId);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
-            final User user = getUserRoles(username);
-            return new ApplicationUser(user);
+            return getUserRoles(username);
         } catch (UserNotFoundException exception) {
             final String message = String.format("User with id '%s' not found.", username);
             throw new UsernameNotFoundException(message, exception);

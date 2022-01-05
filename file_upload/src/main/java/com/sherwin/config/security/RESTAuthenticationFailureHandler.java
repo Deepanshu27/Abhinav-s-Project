@@ -1,6 +1,5 @@
 package com.sherwin.config.security;
 
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -14,9 +13,9 @@ import java.io.IOException;
 public class RESTAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(
-            @NonNull final HttpServletRequest request,
-            @NonNull final HttpServletResponse response,
-            @NonNull final AuthenticationException exception
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException exception
     ) throws IOException, ServletException {
 
         super.onAuthenticationFailure(request, response, exception);
